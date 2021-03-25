@@ -33,6 +33,7 @@ dependencies:
   fluttertoast: ^7.1.8
   path_provider: ^1.6.28
   firebase_storage: ^7.0.0
+  image_picker: ^0.6.7+22
   g_captcha: ^1.0.0
   firebase_database: ^6.0.0
 

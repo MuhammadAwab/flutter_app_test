@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app_test/screens/firstScreen.dart';
+import 'package:image_picker/image_picker.dart';
 import '../listview.dart';
 import 'Login.dart';
 import 'Profile.dart';
@@ -89,9 +90,12 @@ class _SecondScreenState extends State<SecondScreen> {
                           if(snapshot.connectionState==ConnectionState.waiting){
                             return Text('Waiting...');
                           }
-                          else {
+                          else if(snapshot.hasData){
                             return Text(snapshot.data, style: TextStyle(
                                 color: Colors.white, fontSize: 15),);
+                          }
+                          else{
+                            return Text('Error');
                           }
                     }),
                     FutureBuilder(
@@ -100,9 +104,12 @@ class _SecondScreenState extends State<SecondScreen> {
                           if(snapshot.connectionState==ConnectionState.waiting){
                             return Text('Waiting...');
                           }
-                          else {
+                          else if(snapshot.hasData){
                             return Text(snapshot.data, style: TextStyle(
                                 color: Colors.white, fontSize: 15),);
+                          }
+                          else{
+                            return Text('Error');
                           }
                         }),
                   ],
