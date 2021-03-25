@@ -42,11 +42,10 @@ class _ProfileState extends State<Profile> {
     File file = File(filePath);
 
     try {
-      Reference ref = FirebaseStorage.instance.ref().child("/$uid.jpg");
-      UploadTask uploadTask = ref.putFile(file);
-      await uploadTask.whenComplete(() {
-        return ref.getDownloadURL().then((value){
-          picURL = value;
+      await FirebaseStorage.instance.ref("profile_pics").child("/$uid.jpg")
+          .putFile(file).then((value) {
+              return value.ref.getDownloadURL().then((value){
+                picURL = value;
         });
       });
 
