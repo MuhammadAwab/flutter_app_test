@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
 class Profile extends StatefulWidget {
   @override
   _ProfileState createState() => _ProfileState();
@@ -12,6 +14,14 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   String picURL;
   String uid = FirebaseAuth.instance.currentUser.uid;
+  DatabaseReference _dataRef;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _dataRef = FirebaseDatabase.instance.reference().child('User_Information').child(uid);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +30,8 @@ class _ProfileState extends State<Profile> {
       body: _profileBody(context),
     );
   }
+
+
 
 
 
@@ -46,11 +58,9 @@ class _ProfileState extends State<Profile> {
           .putFile(file).then((value) {
               return value.ref.getDownloadURL().then((value){
                 picURL = value;
+                saveImageLinkToDB(picURL);
         });
       });
-
-
-
     } on FirebaseException catch (e) {
       // e.g, e.code == 'canceled'
     }
@@ -105,5 +115,9 @@ class _ProfileState extends State<Profile> {
         );
       },
     );
+  }
+
+  Future<void> saveImageLinkToDB(String imgLink) async{
+    await _dataRef.update({'Image':imgLink});
   }
 }

@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,6 +20,14 @@ class _SecondScreenState extends State<SecondScreen> {
   List<String> cats = ['Action','Animated','Adventure','Biography','Comedy','Drama','Fiction','Horror','Thriller','Sci-Fiction'];
   DatabaseReference _dataRef;
   String uid = FirebaseAuth.instance.currentUser.uid;
+  final List<String> imgList = [
+    'https://images.unsplash.com/photo-1520342868574-5fa3804e551c?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=6ff92caffcdd63681a35134a6770ed3b&auto=format&fit=crop&w=1951&q=80',
+    'https://images.unsplash.com/photo-1522205408450-add114ad53fe?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=368f45b0888aeb0b7b08e3a1084d3ede&auto=format&fit=crop&w=1950&q=80',
+    'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=94a1e718d89ca60a6337a6008341ca50&auto=format&fit=crop&w=1950&q=80',
+    'https://images.unsplash.com/photo-1523205771623-e0faa4d2813d?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=89719a0d55dd05e2deae4120227e6efc&auto=format&fit=crop&w=1953&q=80',
+    'https://images.unsplash.com/photo-1508704019882-f9cf40e475b4?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=8c6e5e3aba713b17aa1fe71ab4f0ae5b&auto=format&fit=crop&w=1352&q=80',
+    'https://images.unsplash.com/photo-1519985176271-adb1088fa94c?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=a0c8d632e977f94e5d312d9893258f59&auto=format&fit=crop&w=1355&q=80'
+  ];
   @override
   void initState() {
     // TODO: implement initState
@@ -29,8 +38,8 @@ class _SecondScreenState extends State<SecondScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(_text),
-      actions: [
-        PopupMenuButton(
+        actions: [
+          PopupMenuButton(
           onSelected: (menuItems result) { setState(()
           {
             if(result==menuItems.nB){
@@ -80,10 +89,26 @@ class _SecondScreenState extends State<SecondScreen> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      backgroundImage: AssetImage('assets/images/binglogo.jpg'),
-                      radius: 50,
-                    ),
+                    FutureBuilder(
+                        future: _getImage(),
+                        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                          if(snapshot.connectionState==ConnectionState.waiting){
+                            return CircleAvatar(
+                              radius: 50,
+                            );
+                          }
+                          else if(snapshot.hasData){
+                            return CircleAvatar(
+                              backgroundImage: NetworkImage(snapshot.data),
+                              radius: 50,
+                            );
+                          }
+                          else{
+                            return CircleAvatar(
+                              radius: 50,
+                            );
+                          }
+                        }),
                     FutureBuilder(
                         future: _getName(),
                         builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
@@ -149,9 +174,29 @@ class _SecondScreenState extends State<SecondScreen> {
       body: Column(
         children: [
           _catList(),
-          Text(_text,style: TextStyle(fontSize: 25,color: Colors.indigo),),
+          _imageSliderExample(context)
         ],
       )
+    );
+  }
+  
+  Widget _imageSliderExample(BuildContext context){
+    return CarouselSlider(
+      options: CarouselOptions(
+        autoPlay: true,
+        enlargeCenterPage: true,
+        enlargeStrategy: CenterPageEnlargeStrategy.height,
+      ),
+      items: List.generate(imgList.length, (index) {
+        return _eachItem(context, index);
+      }),
+    );
+  }
+
+  Widget _eachItem(BuildContext context,int index){
+    return ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Image.network(imgList[index],fit: BoxFit.cover),
     );
   }
 
@@ -163,6 +208,12 @@ class _SecondScreenState extends State<SecondScreen> {
 
   Future<String> _getEmail() async{
     return await _dataRef.child('Email').once().then((DataSnapshot snapshot) {
+      return snapshot.value;
+    });
+  }
+
+  Future<String> _getImage() async{
+    return await _dataRef.child('Image').once().then((DataSnapshot snapshot) {
       return snapshot.value;
     });
   }

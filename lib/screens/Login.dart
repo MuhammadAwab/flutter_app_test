@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_test/screens/Registration.dart';
 import 'package:flutter_app_test/screens/SecondScreen.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:g_captcha/g_captcha.dart';
 import 'firstScreen.dart';
 
 class Login extends StatefulWidget {
@@ -23,13 +22,6 @@ class _LoginState extends State<Login> {
   void initState() {
     // TODO: implement initState
 
-  }
-
-  _openReCaptcha() async {
-    String tokenResult = await GCaptcha.reCaptcha(CAPTCHA_SITE_KEY);
-    print('tokenResult: $tokenResult');
-    Fluttertoast.showToast(msg: tokenResult, timeInSecForIosWeb: 4);
-    // setState
   }
 
   @override
@@ -69,7 +61,6 @@ class _LoginState extends State<Login> {
                     controller: pC,
                     obscureText: true,
                     decoration: InputDecoration(hintText: 'Password')),
-                RaisedButton(onPressed: _openReCaptcha, child: Text('reCaptcha')),
                 RaisedButton(
                   child: Text('Login',style: TextStyle(color: Colors.white),),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

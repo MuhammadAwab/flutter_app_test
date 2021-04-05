@@ -21,10 +21,21 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue
       ),
-      home: (FirebaseAuth.instance.currentUser==null)
+      home: /*(FirebaseAuth.instance.currentUser==null)
             ?Login()
-            :SecondScreen()//HomePage()//RegistrationPage()//TabbedView()//
+            :SecondScreen()*///HomePage()//RegistrationPage()//TabbedView()//
+            _home(context)
     );
+    
+  }
+  
+  Widget _home(BuildContext context){
+    if(FirebaseAuth.instance.currentUser==null){
+      return Login();
+    }
+    else{
+      return SecondScreen();
+    }
   }
 }
 
