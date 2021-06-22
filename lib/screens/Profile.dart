@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -31,10 +30,6 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-
-
-
-
   pickImageFromGallery(ImageSource source) {
       ImagePicker.pickImage(source: source).then((value){
           Navigator.pop(context);
@@ -47,7 +42,6 @@ class _ProfileState extends State<Profile> {
             });
           });
       });
-
   }
 
   Future<void> uploadFile(String filePath) async {

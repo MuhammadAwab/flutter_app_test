@@ -4,7 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_signin_button/button_list.dart';
+import 'package:flutter_signin_button/button_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'Login.dart';
 import 'SecondScreen.dart';
@@ -84,6 +87,23 @@ class _RegistrationState extends State<Registration> {
                         }));
                   },
                 ),
+                Text('OR'),
+                SignInButton(
+                  Buttons.GoogleDark,
+                  shape: RoundedRectangleBorder(),
+                  text: "Google",
+                  onPressed: () {
+                    signInWithGoogle().then((value){
+                      String uid = FirebaseAuth.instance.currentUser.uid;
+                      return _setDataWhenGoogle(uid, value.user.displayName,value.user.email,value.user.photoURL).then((value) {
+                        return Navigator.pushReplacement(context,
+                            MaterialPageRoute(builder: (context){
+                              return SecondScreen();
+                            }));
+                      });
+                    });
+                  },
+                ),
               ],
             ), ),
         ));
@@ -102,6 +122,25 @@ class _RegistrationState extends State<Registration> {
         );
       },
     );
+  }
+
+  Future<UserCredential> signInWithGoogle() async {
+
+    // Trigger the authentication flow
+    final GoogleSignInAccount googleUser = await GoogleSignIn().signIn();
+    showLoaderDialog(context);
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
   void registerUser(String email,String password) async{
@@ -136,6 +175,10 @@ class _RegistrationState extends State<Registration> {
 
   Future<void> _setData(String uid,String name,String email) async{
     await _dataRef.child(uid).set({'Name':name,'Email':email});
+  }
+
+  Future<void> _setDataWhenGoogle(String uid,String name,String email,String img) async{
+    await _dataRef.child(uid).set({'Name':name,'Email':email,'Image':img});
   }
 
 }

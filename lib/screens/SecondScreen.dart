@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_app_test/screens/firstScreen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import '../listview.dart';
 import 'Login.dart';
@@ -16,10 +19,11 @@ class SecondScreen extends StatefulWidget {
 }
 enum menuItems { nG, nB, wW, sM ,sT}
 class _SecondScreenState extends State<SecondScreen> {
-  String _text='Movies';
+  String _text;
   List<String> cats = ['Action','Animated','Adventure','Biography','Comedy','Drama','Fiction','Horror','Thriller','Sci-Fiction'];
   DatabaseReference _dataRef;
   String uid = FirebaseAuth.instance.currentUser.uid;
+  String id;
   final List<String> imgList = [
     'https://images.unsplash.com/photo-1520342868574-5fa3804e551c?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=6ff92caffcdd63681a35134a6770ed3b&auto=format&fit=crop&w=1951&q=80',
     'https://images.unsplash.com/photo-1522205408450-add114ad53fe?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=368f45b0888aeb0b7b08e3a1084d3ede&auto=format&fit=crop&w=1950&q=80',
@@ -28,16 +32,25 @@ class _SecondScreenState extends State<SecondScreen> {
     'https://images.unsplash.com/photo-1508704019882-f9cf40e475b4?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=8c6e5e3aba713b17aa1fe71ab4f0ae5b&auto=format&fit=crop&w=1352&q=80',
     'https://images.unsplash.com/photo-1519985176271-adb1088fa94c?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=a0c8d632e977f94e5d312d9893258f59&auto=format&fit=crop&w=1355&q=80'
   ];
+  bool switchVal = false;
+  double height = AppBar().preferredSize.height;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    _text="Movies";
     _dataRef = FirebaseDatabase.instance.reference().child('User_Information').child(uid);
+    //_testData();
+
   }
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      appBar: AppBar(title: Text(_text),
+      appBar: AppBar(
+        title: Container(
+          child: Text(_text),
+        ),
         actions: [
           PopupMenuButton(
           onSelected: (menuItems result) { setState(()
@@ -174,10 +187,144 @@ class _SecondScreenState extends State<SecondScreen> {
       body: Column(
         children: [
           _catList(),
-          _imageSliderExample(context)
+          _imageSliderExample(context),
+          _tButton(context)
         ],
       )
     );
+  }
+
+  Widget _drawer(BuildContext context){
+    return Drawer(
+      child: ListView(
+        children: [
+          DrawerHeader(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FutureBuilder(
+                    future: _getImage(),
+                    builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      if(snapshot.connectionState==ConnectionState.waiting){
+                        return CircleAvatar(
+                          radius: 50,
+                        );
+                      }
+                      else if(snapshot.hasData){
+                        return CircleAvatar(
+                          backgroundImage: NetworkImage(snapshot.data),
+                          radius: 50,
+                        );
+                      }
+                      else{
+                        return CircleAvatar(
+                          radius: 50,
+                        );
+                      }
+                    }),
+                FutureBuilder(
+                    future: _getName(),
+                    builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      if(snapshot.connectionState==ConnectionState.waiting){
+                        return Text('Waiting...');
+                      }
+                      else if(snapshot.hasData){
+                        return Text(snapshot.data, style: TextStyle(
+                            color: Colors.white, fontSize: 15),);
+                      }
+                      else{
+                        return Text('Error');
+                      }
+                    }),
+                FutureBuilder(
+                    future: _getEmail(),
+                    builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      if(snapshot.connectionState==ConnectionState.waiting){
+                        return Text('Waiting...');
+                      }
+                      else if(snapshot.hasData){
+                        return Text(snapshot.data, style: TextStyle(
+                            color: Colors.white, fontSize: 15),);
+                      }
+                      else{
+                        return Text('Error');
+                      }
+                    }),
+              ],
+            ),
+            decoration: BoxDecoration(
+                color: Colors.lightBlue
+            ),
+          ),
+          GestureDetector(
+              child: ListTile(leading: Icon(Icons.person),title: Text('Profile'),),
+              onTap: (){
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) {
+                      return Profile();
+                    })
+                );
+                /*setState(() {
+                    _text = 'Profile';
+                    Navigator.pop(context);
+                  });*/
+              }),
+          ListTile(leading: Icon(Icons.settings),title: Text('Settings'),),
+          ListTile(leading: Icon(Icons.info),title: Text('About Us'),),
+          GestureDetector(
+              child: ListTile(leading: Icon(Icons.logout),title: Text('Sign out'),),
+              onTap: (){
+                signOut();
+                showLoaderDialog(context);
+                /*setState(() {
+                    _text = 'Profile';
+                    Navigator.pop(context);
+                  });*/
+              }),
+        ],
+      ),
+    );
+
+  }
+
+  Widget _customBar(BuildContext context){
+    return PreferredSize(
+      preferredSize: Size(
+          MediaQuery.of(context).size.width,
+          height
+      ),
+      child: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+          ListTile(
+            leading: IconButton(icon: Icon(Icons.menu), onPressed: () {
+              print('Clicked');
+              Scaffold.of(context).openDrawer();
+              },),
+            title: Text('Movies'),
+            trailing:  IconButton(icon: Icon(Icons.more_vert), onPressed: () {  },),
+          )
+        ],),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Colors.red,Colors.blue]
+          )
+        ),
+      ),
+      
+    );
+  }
+
+  Widget _tButton(BuildContext context){
+    return Switch(value: switchVal, onChanged: (value){
+      setState(() {
+        switchVal = value;
+      });
+    },);
   }
   
   Widget _imageSliderExample(BuildContext context){
@@ -220,13 +367,12 @@ class _SecondScreenState extends State<SecondScreen> {
 
   void signOut()async{
     await FirebaseAuth.instance.signOut().then((value) {
+      GoogleSignIn().disconnect();
       Navigator.pushReplacement(context, MaterialPageRoute(builder:(context){
         return Login();
       }));
     });
   }
-
-
 
   showLoaderDialog(BuildContext context){
     showDialog(barrierDismissible: false,
@@ -275,4 +421,33 @@ class _SecondScreenState extends State<SecondScreen> {
                 )
           );
   }
+
+  void _testData() async{
+    DatabaseReference _testRef = FirebaseDatabase.instance.reference().child('testing').child(uid);
+    await _testRef.limitToLast(1).once().then((DataSnapshot snapshot) {
+      if(snapshot.value!=null) {
+        //var body = jsonEncode(snapshot.value);
+        Map<dynamic, dynamic> data = snapshot.value;
+        print('TESTING : ${data.keys.first}');
+        int numId = int.parse(data.keys.first) + 1;
+        if (numId < 10) {
+          id = ('0$numId').toString(); //id="02"
+        }
+        else {
+          id = (numId).toString();
+        }
+        print(id);
+      }
+      else{
+        id = "01";
+      }
+    }).then((value){
+        _testRef.child(id).set({'a':1,'b':1,'c':1}).then((value){
+          _testData();
+        });
+    });
+  }
+
+
+
 }

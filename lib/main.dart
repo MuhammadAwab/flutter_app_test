@@ -21,10 +21,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue
       ),
-      home: /*(FirebaseAuth.instance.currentUser==null)
+      home: (FirebaseAuth.instance.currentUser==null)
             ?Login()
-            :SecondScreen()*///HomePage()//RegistrationPage()//TabbedView()//
-            _home(context)
+            :SecondScreen() ///HomePage()//RegistrationPage()//TabbedView()//
+            //_home(context)
     );
     
   }
